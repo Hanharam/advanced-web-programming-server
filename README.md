@@ -1,15 +1,17 @@
-# "Node.js Tutorial - How to Build a Web Server"
+# Advanced Web Programming - Node.js Web Server
 
-✅ [Check out my YouTube Channel with all of my tutorials](https://www.youtube.com/DaveGrayTeachesCode).
+## 📌 Project Introduction
+This repository is dedicated to my coursework and projects for **Advanced Web Programming**. 
 
-**Description:**
+*Note: This README will be continuously updated as I progress through the course assignments.*
 
-This repository shares the code applied during the Youtube tutorial. The tutorial is part of a [Node.js for Beginners Playlist](https://www.youtube.com/playlist?list=PL0Zuz27SZ-6PFkIxaJ6Xx_X46avTM1aYw) on my channel.  
+---
 
-[YouTube Tutorial](https://youtu.be/3ZAKY-CDKog) for this repository.
+## 📝 Assignments
 
-I suggest completing my [8 hour JavaScript course tutorial video](https://youtu.be/EfAl9bwzVZk) if you are new to Javascript.
-
-### Academic Honesty
-
-**DO NOT COPY FOR AN ASSIGNMENT** - Avoid plagiargism and adhere to the spirit of this [Academic Honesty Policy](https://www.freecodecamp.org/news/academic-honesty-policy/).
+### Assignment #1 (Part-A): Server Initialization & Custom Logging
+- **Goal:** Clone a base Node.js web server, run it locally, and modify the code to output a personal identifier to the console.
+- **Achievement:** - Successfully cloned the repository and installed necessary dependencies via `npm install`.
+  - Injected a custom `console.log("hanharam")` statement into the main server logic. 
+  - Verified the local development environment by confirming that my nickname is actively logged to the terminal whenever the server is executed and accessed.
+  <img width="236" height="36" alt="image" src="https://github.com/user-attachments/assets/f55b60ed-9fbf-4912-bed1-a97488b8a359" />
