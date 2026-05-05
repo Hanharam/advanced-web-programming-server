@@ -42,3 +42,128 @@ exports.deleteStudent = (req, res) => {
 
   res.json({ message: "Student deleted successfully" });
 };
+
+
+
+
+const http = require('http');
+const path = require('path');
+const fs = require('fs');
+const fsPromises = require('fs').promises;
+
+const logEvents = require('./logEvents');
+const EventEmitter = require('events');
+class Emitter extends EventEmitter { };
+
+// Setup a custom event listener to log messages
+const myEmitter = new Emitter();
+myEmitter.on('log', (msg, fileName) => logEvents(msg, fileName));
+
+const PORT = process.env.PORT || 3500;
+
+// Helper function to read and send files back to the client
+const serveFile = async (filePath, contentType, response) => {
+    try {
+        // Read file content. Use 'utf8' for text, but leave blank for images
+        const rawData = await fsPromises.readFile(
+            filePath,
+            !contentType.includes('image') ? 'utf8' : ''
+        );
+        
+        // Convert string to JSON object if the file is a JSON file
+        const data = contentType === 'application/json'
+            ? JSON.parse(rawData) : rawData;
+            
+        // Send a 200 (Success) or 404 (Not Found) status code with the content type
+        response.writeHead(
+            filePath.includes('404.html') ? 404 : 200,
+            { 'Content-Type': contentType }
+        );
+        
+        // Send the final data to the browser
+        response.end(
+            contentType === 'application/json' ? JSON.stringify(data) : data
+        );
+    } catch (err) {
+        // If there's a problem reading the file, log it and send a 500 Server Error
+        console.log(err);
+        myEmitter.emit('log', `${err.name}: ${err.message}`, 'errLog.txt');
+        response.statusCode = 500;
+        response.end();
+    }
+}
+
+const server = http.createServer((req, res) => {
+    // Log every incoming request's URL and HTTP method (GET, POST, etc.)
+    console.log(req.url, req.method);
+    myEmitter.emit('log', `${req.url}\t${req.method}`, 'reqLog.txt');
+
+    const extension = path.extname(req.url);
+
+    let contentType;
+
+    // Set the correct Content-Type based on the file extension
+    switch (extension) {
+        case '.css':
+            contentType = 'text/css';
+            break;
+        case '.js':
+            contentType = 'text/javascript';
+            break;
+        case '.json':
+            contentType = 'application/json';
+            break;
+        case '.jpg':
+            contentType = 'image/jpeg';
+            break;
+        case '.png':
+            contentType = 'image/png';
+            break;
+        case '.txt':
+            contentType = 'text/plain';
+            break;
+        default:
+            contentType = 'text/html';
+    }
+
+    // Determine the exact physical path of the requested file
+    let filePath =
+        contentType === 'text/html' && req.url === '/'
+            ? path.join(__dirname, 'views', 'index.html') // Serve index.html for root "/"
+            : contentType === 'text/html' && req.url.slice(-1) === '/'
+                ? path.join(__dirname, 'views', req.url, 'index.html') // Serve index.html for sub-folders
+                : contentType === 'text/html'
+                    ? path.join(__dirname, 'views', req.url) // Look inside 'views' folder for HTML
+                    : path.join(__dirname, req.url); // Look at the root for CSS, images, etc.
+
+    // Allow users to request pages without typing '.html' at the end of the URL
+    if (!extension && req.url.slice(-1) !== '/') filePath += '.html';
+
+    const fileExists = fs.existsSync(filePath);
+
+    if (fileExists) {
+        // If the file exists, serve it!
+        serveFile(filePath, contentType, res);
+    } else {
+        // If the file does not exist, check for redirects or serve a 404 page
+        switch (path.parse(filePath).base) {
+            case 'old-page.html':
+                // 301 Redirect: Send users from the old page to the new one
+                res.writeHead(301, { 'Location': '/new-page.html' });
+                res.end();
+                break;
+            case 'www-page.html':
+                res.writeHead(301, { 'Location': '/' });
+                res.end();
+                break;
+            default:
+                // Serve the custom 404 Not Found error page
+                serveFile(path.join(__dirname, 'views', '404.html'), 'text/html', res);
+        }
+    }
+});
+
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log("hanharam");
+});
